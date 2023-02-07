@@ -1,0 +1,207 @@
+/*
+ * modal_login.nlg
+ * WebApp Example 1
+ *
+ *     Login challenge.
+ *
+ * column positioning:                          //                          //                      !
+ *
+ * Copyright (c) 2022 by Richard C. Zulch
+ *
+ */
+
+
+/*
+ * modalLoginFrame
+ *
+ *     Operate a modal login dialog.
+ *
+ */
+
+closure modalLoginFrame(modalcon, local frame, webapp) {
+    frame = FrameBase(modalcon.frames, "webAppLoginModal")
+    webapp = modalcon.frames.webapp
+    frame.modal = window.bootstrap.Modal.getOrCreateInstance(frame.div)
+    frame.mli_email = frame.firstClass("mli_email")
+    frame.mli_password = frame.firstClass("mli_password")
+    frame.mli_loginButton = frame.firstClass("mli_login")
+    frame.mli_spinner = frame.firstClass("modal-spinner-icon")
+    frame.mli_error = frame.firstClass("mli_error")
+    frame.mli_error.innerText = ""
+    
+    // clearError
+    //
+    // Clear the error text.
+    //
+    function clearError() {
+        frame.mli_error.innerText = ""
+    }
+    
+    // setError
+    //
+    // Set the error text.
+    //
+    function setError(errtext) {
+        frame.mli_error.innerText = errtext
+    }
+    
+    // credHash
+    //
+    // Hash our credentials to test for change.
+    //
+    function credHash() {
+        HashSHA256(frame.mli_email.value.concat(frame.mli_password.value))
+    }
+    
+    // update
+    //
+    // Update the UI for the values in fields.
+    //
+    function update(local result) {
+        setElementClass(frame.mli_loginButton, "disabled",
+            frame.mli_email.value == "" || frame.mli_password.value == "")
+        if frame.credHash != credHash()
+            clearError()                                                    // remove error when credentials change
+    }
+
+    // performLogin
+    //
+    // Perform the login using the current field values.
+    //
+    function performLogin(local error, data) {
+        clearError()
+        setElementClass(frame.mli_spinner, "invisible", false)
+        setElementClass(frame.mli_loginButton, "disabled", true)
+        frame.credHash = credHash()
+        `(error, data) = webapp.client.login(frame.mli_email.value, frame.mli_password.value)
+        setElementClass(frame.mli_spinner, "invisible", true)
+        if data
+            frame.hide()
+        else if error.memo
+            setError(error.memo)
+        else
+            setError("login failed")
+        update()
+    }
+
+    //
+    // event handlers
+    //
+    
+    frame.mli_loginButton.addEventListener("click", function(event) {
+        performLogin()
+    })
+
+    frame.mli_email.addEventListener("keyup", function(event) {
+        update()
+        if (event.key == "Enter") {
+            if frame.mli_email.value != "" {
+                frame.mli_email.select()
+                frame.mli_password.focus()
+            }
+        }
+    })
+
+    frame.mli_password.addEventListener("keyup", function(event) {
+        update()
+        if (event.key == "Enter") {
+            if frame.mli_password.value != "" {
+                frame.mli_password.select()
+                if frame.mli_email.value == ""
+                    frame.mli_email.focus()
+                else
+                    performLogin()
+            }
+        }
+    })
+
+    // activated
+    //
+    // We have become the active frame.
+    //
+    frame.activated = function activated() {
+        modalcon.frameActivated(frame)
+        debuglog("activated", frame.crp_title.textContent)
+    }
+
+    // deactivated
+    //
+    // We will be deactivated.
+    //
+    frame.deactivated = function deactivated() {
+        debuglog("deactivated", frame.crp_title.textContent)
+    }
+    
+    // swipeStart
+    //
+    // A swipe has started from our frame.
+    //
+    frame.swipeStart = function swipeStart(axis) {
+    }
+    
+    // show
+    //
+    // Show the modal login dialog.
+    //
+    frame.show = function show() {
+        update()
+        frame.modal.show()
+    }
+    
+    // hide
+    //
+    // Hide the modal login dialog.
+    //
+    frame.hide = function hide() {
+        frame.modal.hide()
+    }
+
+    // finis
+
+    frame
+};
+
+
+/*
+ * ModalLogin
+ *
+ *     Present a login challenge dialog. This controller object owns the dialog object and manages
+ * interactions with the rest of the application.
+ *
+ */
+
+closure ModalLogin(frames, local modalcon) {
+    modalcon = new(object, this)
+    modalcon.frames = frames
+    modalcon.modal
+
+    // authenticate
+    //
+    // Obtain credentials and authenticate.
+    
+    modalcon.authenticate = closure authenticate(local frame) {
+        if !modalcon.modalFrame
+            modalcon.modalFrame = modalLoginFrame(modalcon)
+        modalcon.modalFrame.show()
+    }
+
+    // finis
+    
+    modalcon
+};
+
+
+/*
+ * modalLoginInit
+ *
+ *     Load the ModalLogin module.
+ *
+ */
+
+function modalLoginInit(local manifest) {
+    manifest = `(modalLoginFrame, ModalLogin, modalLoginInit)
+
+    Naan.module.build(module.id, "modal_login", function(modobj, compobj) {
+        compobj.manifest = manifest
+    })
+} ();

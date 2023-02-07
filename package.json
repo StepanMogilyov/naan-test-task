@@ -1,0 +1,12 @@
+{
+    "name": "example-1-webapp",
+    "version": "0.1.0",
+    "author": "Richard C. Zulch",
+    "description": "",
+    "dependencies": {
+        "@naanlang/naan": "^1.0.8"
+    },
+    "devDependencies": {},
+    "keywords": [],
+    "license": "MIT"
+}

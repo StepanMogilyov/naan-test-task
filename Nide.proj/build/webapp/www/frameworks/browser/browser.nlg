@@ -1,0 +1,119 @@
+/*
+ * browser.nlg
+ * Naanlib/frameworks/browser
+ *
+ *     Root component for browser-specific functionality.
+ *
+ * column positioning:                          //                          //                      !
+ *
+ * Copyright (c) 2020-2023 by Richard C. Zulch
+ *
+ */
+
+
+/*
+ * FileReader
+ *
+ *     Read file(s) from the browser's host machine. This is passed a File object and returns a
+ * nearly-standard (error, blob, size) tuple. If progress is specified then this function is called
+ * with a percentage of completion from zero to 100 if available, or true otherwise. The progress
+ * callback is called with "false" when completed, with or without success
+ *
+ */
+
+closure FileReader(file, progress, local pending, freader, result) {
+    pending = new(nonce)
+    freader = xnew(window.FileReader)
+    freader.addEventListener("load", function(event, local blob) {
+        blob = xnew(window.Blob, [freader.result], {
+            type: file.type
+        })
+        pending.signal(list(false, blob, event.total))
+    })
+    freader.addEventListener("error", function(error) {
+        pending.signal(list(error))
+    })
+    freader.AddEventListener("progress", function(event) {
+        if event.lengthComputable && event.total
+            progress(toint((event.loaded * 100) / event.total))
+        else
+            progress(true)
+    })
+    freader.readAsArrayBuffer(file)
+    result = pending.wait()
+    progress(false)
+    result
+};
+
+
+/*
+ * FileDownload
+ *
+ *     Download a file from the browser, returning a standard error tuple.
+ *
+ */
+
+closure FileDownload(file, progress, local error, blob, sizez, url, link) {
+    `(error, blob, size) = FileReader(file, progress)
+    if error
+        list(error)
+    else {
+        url = window.URL.createObjectURL(blob)
+        link = document.createElement("a")
+        link.href = url
+        link.download = file.name
+        link.click()
+        window.URL.revokeObjectURL(url)
+        list(false, file.name)
+    }
+};
+
+
+/*
+ * Platform
+ *
+ *     Return a string identifying the platform our browser is running on, or false if unknown.
+ *
+ */
+
+function Platform(local agent, patterns, key, rx) {
+    agent = window.navigator.userAgent.toLowerCase()
+    patterns = {
+        macos: RegExp("macintosh|macintel|macppc|mac68k|macos")
+        windows: RegExp("win32|win64|windows|wince")
+        ios: RegExp("iphone|ipad|ipod")
+        android: RegExp("android")
+        linux: RegExp("linux")
+    }
+    for `(key, rx) in patterns
+        if rx.test(agent)
+            return (key)
+    false
+};
+
+
+/*
+ * brorInit
+ *
+ *     Initialize the browser module.
+ *
+ *
+ */
+
+function brorInit(local manifest) {
+    manifest = `(FileReader, FileDownload, Platform, brorInit)
+
+    Naan.module.build(module.id, "browser", function(modobj, compobj) {
+        require("../common").LiveImport()
+        compobj.manifest = manifest
+        modobj.exports.FileReader = FileReader
+        modobj.exports.FileDownload = FileDownload
+        modobj.exports.Platform = Platform
+
+        function brorReload() {
+            window = js.w
+            document = window.document
+        }()
+        module.reload = brorReload
+    })
+} ();

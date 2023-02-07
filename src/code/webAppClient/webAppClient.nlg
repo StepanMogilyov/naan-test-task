@@ -1,0 +1,27 @@
+/*
+ * webAppClient.nlg
+ * WebApp Example 1
+ *
+ * Stub client.
+ *
+ * column positioning:                          //                          //                      !
+ *
+ * Copyright (c) 2022 by Richard C. Zulch
+ *
+ */
+
+
+/*
+ * webAppClientInit
+ *
+ *     Initialize the module.
+ *
+ */
+
+function webAppClientInit(local manifest) {
+    manifest = `(webAppClientInit)
+    Naan.module.build(module.id, "webAppClient", function(modobj, compobj) {
+        compobj.manifest = manifest
+        require("frameworks/common").LiveImport()
+    })
+} ();

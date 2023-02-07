@@ -1,0 +1,54 @@
+/*
+ * wa_admin_client.nlg
+ * WebApp Example 1
+ *
+ *     Backend Admin API.
+ *
+ * column positioning:                          //                          //                      !
+ *
+ * Copyright (c) 2022 by Richard C. Zulch
+ *
+ */
+
+
+/*
+ * WacAdminClient
+ *
+ *     Talks with a backend.
+ *
+ */
+
+closure WacAdminClient(owner, local wacac)
+{
+    wacac = WacClientBase(owner)
+
+    // addUser
+    //
+    // Add a user record, returning a standard `(error, result) tuple.
+    //
+    wacac.addUser = function addUser(userRec, options) {
+        list(Error("addUser not implemented"))
+    }
+
+    // finis
+    wacac
+};
+
+
+/*
+ * wacAdminClientInit
+ *
+ *     Initialize this component.
+ *
+ */
+
+function wacAdminClientInit(local manifest) {
+    manifest = `(WacAdminClient, wacAdminClientInit)
+
+    Naan.module.build(module.id, "wa_admin_client", function(modobj, compobj, local nideCommon) {
+        compobj.manifest = manifest
+        module.exports.WacAdminClient = WacAdminClient
+        require("wa_clients.nlg")
+    })
+    
+} ();

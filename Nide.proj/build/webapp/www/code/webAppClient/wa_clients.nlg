@@ -1,0 +1,98 @@
+/*
+ * wa_clients.nlg
+ * WebApp Example 1
+ *
+ *     Base of the client side of a backend API.
+ *
+ * column positioning:                          //                          //                      !
+ *
+ * Copyright (c) 2022-2023 by Richard C. Zulch
+ *
+ */
+
+
+/*
+ * WacClientBase
+ *
+ *     Mock login code.
+ *
+ */
+
+closure WacClientBase(local client)
+{
+    client = new(object, this)
+
+    // open
+    //
+    // Open the client with saved credentials.
+    //
+    client.open = function open(state, callback) {
+        client.state = state
+        client.callback = callback
+        `(false, { ok: true })
+    }
+
+    // login
+    //
+    // Attempt to login with credentials, returning a standard error tuple.
+    //
+    client.login = function login(email, password) {
+        if client.state.email {
+            if email != client.state.email
+                list(Error("already logged in"))
+            else
+                `(false, { ok: true })
+        }
+        else {
+            client.state = {
+                email: email
+                password: password
+                fullName: "Joe Blow"
+            }
+            client.callback(client.state)
+            `(false, { ok: true })
+        }
+    }
+
+    // logout
+    //
+    // Log out from the backend, destroying any credentials we have stored.
+    //
+    client.logout = function logout() {
+        client.state = { }
+        client.callback(client.state)
+    }
+
+    // currentUserInfo
+    //
+    // Obtain a dictionary of information about the current user.
+    //
+    client.currentUserInfo = function currentUserInfo() {
+        if client.state.email
+            list(false, client.state)
+        else
+            list(Error("not logged in"))
+    }
+
+    // finis
+
+    client
+};
+
+
+/*
+ * wacsInit
+ *
+ *     Initialize this component.
+ *
+ */
+
+function wacsInit(local manifest) {
+    manifest = `(WacClientBase, wacsInit)
+
+    Naan.module.build(module.id, "wa_clients", function(modobj, compobj) {
+        require("webAppClient.nlg")
+        compobj.manifest = manifest
+    })
+
+} ();

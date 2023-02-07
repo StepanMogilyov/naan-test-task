@@ -1,0 +1,45 @@
+/*
+ * wa_user_client.nlg
+ * WebApp Example 1
+ *
+ *     Backend user API.
+ *
+ * column positioning:                          //                          //                      !
+ *
+ * Copyright (c) 2022 by Richard C. Zulch
+ *
+ */
+
+
+/*
+ * WacUserClient
+ *
+ *     Talks with a backend for user functions.
+ *
+ */
+
+closure WacUserClient(owner, local wacuc)
+{
+    wacuc = WacClientBase(owner)
+
+    // finis
+    wacuc
+};
+
+
+/*
+ * wacUserClientInit
+ *
+ *     Initialize this component.
+ *
+ */
+
+function wacUserClientInit(local manifest) {
+    manifest = `(WacUserClient, wacUserClientInit)
+
+    Naan.module.build(module.id, "wa_user_client", function(modobj, compobj, local nideCommon) {
+        compobj.manifest = manifest
+        module.exports.WacUserClient = WacUserClient
+        require("wa_clients.nlg")
+    })
+} ();

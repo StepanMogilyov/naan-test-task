@@ -1,0 +1,181 @@
+/*
+ * app_navbar.nlg
+ * WebApp Example 1
+ *
+ *     App navbar UI.
+ *
+ * column positioning:                          //                          //                      !
+ *
+ * Copyright (c) 2022 by Richard C. Zulch
+ *
+ */
+
+
+/*
+ * appNavbarFrame
+ *
+ * column positioning:                          //                          //                      !
+ *     Operate the app navbar. WHen a page goes active/inactive then it is called with
+ * <page>.navtab(active, ident) before it is hidden or after it has become active.
+ *
+ */
+
+closure appNavbarFrame(navcon, local navbar, webapp) {
+    navbar = FrameBase(navcon.frames, "webAppNavbar")
+    navbar.tabs = new(nonce)                                                // goes away with UI
+    navbar.items = []
+    navbar.menu = document.getElementById("WebAppNav")
+    navbar.menuBefore = document.getElementById("WebAppRunButton")
+    navbar.main = document.getElementById("WebAppMain")
+    navbar.userInfo = document.getElementById("WebAppUserInfo")
+    navbar.butLogout = document.getElementById("WebAppLogout")
+    navbar.avatar = document.getElementById("WebAppAvatarInnerText")
+    webapp = navcon.frames.webapp
+
+    // event handlers
+    navbar.butLogout.onclick = function (event) {
+        debuglog("perform logout")
+        webapp.client.logout()
+    }
+
+    // registerTab - register a tab in our list
+    navbar.registerTab = function registerTab(ident, menu, page, local tab) {
+        tab = {
+            ident:      ident,
+            menu:       document.getElementById(menu),
+            page:       document.getElementById(page),
+        }
+        tab.classList = tab.menu.children.0.classList
+        closure(ident, menu) {                                              // create a listener for each click
+            menu.addEventListener("click", function() {
+                navbar.selectPage(ident)
+            })
+        } (tab.ident, tab.menu)
+        tab.classList.remove("active")
+        navbar.items.push(tab)
+    }
+    
+    // appendPage - create a tab page and add to end of list
+    navbar.appendPage = function appendPage(ident, name, html, obj, local item, link, page) {
+        if navbar.tabs[ident] {
+            debuglog("page already defined:", ident)
+            return
+        }
+        item = document.getElementById("WebAppNavHome").cloneNode(true)
+        item.id = "WebAppNav_".concat(ident)
+        link = item.getElementsByTagName("a").0
+        link.text = name
+        navbar.menu.insertBefore(item, navbar.menuBefore)
+        page = document.getElementById("WebAppPageHome").cloneNode(true)
+        page.style.visibility = "hidden"
+        page.innerHTML = html
+        page.id = "WebAppPage_".concat(ident)
+        navbar.main.appendChild(page)
+        registerTab(ident, item.id, page.id)
+        navbar.tabs[ident] = obj
+    }
+
+    // identItem(ident) - get item for ident, else false
+    navbar.identItem = function identItem(ident) {
+        for item in navbar.items
+            if item.ident == ident
+                return (item)
+        return (false)
+    }
+
+    // disabled(ident) - true iff ident is disabled
+    navbar.disabled = function disabled(ident, local item) {
+        item = navbar.identItem(ident)
+        if not item
+            return (true)
+        return (item.classList.contains("disabled"))
+    }
+
+    // selectPage(ident) - select only the specified page
+    navbar.selectPage = function selectPage(ident) {
+        if disabled(ident)
+            return
+        navbar.active = false
+        for item in navbar.items
+            if item.ident == ident {
+                item.classList.add("active")
+                item.page.style.visibility = ""
+                navbar.active = ident
+            } else {
+                if item.classList.contains("active")
+                    navbar.tabs[item.ident].navtab(false, item.ident)
+                item.classList.remove("active")
+                item.page.style.visibility = "hidden"
+            }
+        if navbar.active
+            navbar.tabs[navbar.active].navtab(true, navbar.active)
+    }
+    
+    
+    // setCurrentUser(data) - display or clear the current user info
+    navbar.setCurrentUser = function setCurrentUser(info) {
+        if info.fullName {
+      //      TESTTESTTEST
+           navbar.userInfo.innerText = info.fullName
+           // here i tryed to get "info.fullname[0]", but i wasn't succeed
+           navbar.avatar.innerText = "J"
+      }
+
+       else
+            navbar.userInfo.innerText = ""
+    }
+    
+    // navbar.objForIdent(ident)    - return object for that page
+    navbar.objForIdent = function objForIdent(ident) { navbar.tabs[ident] }
+
+    // nabar.activeObj()            - return object for active page
+    navbar.activeObj = function activeObj() { navbar.tabs[navbar.active] }
+    
+    // initialize the required home page
+    registerTab("home", "WebAppNavHome", "WebAppPageHome")
+
+    // finis
+
+    navbar
+};
+
+
+/*
+ * AppNavbar
+ *
+ *     Manage the app navbar.
+ *
+ */
+
+closure AppNavbar(frames, local navcon) {
+    navcon = new(object, this)
+    navcon.frames = frames
+    navcon.frame = appNavbarFrame(navcon)
+
+    // setCurrentUser
+    //
+    navcon.setCurrentUser = function setCurrentUser(info) {
+        navcon.frame.setCurrentUser(info)
+    }
+
+    // finis
+    
+    navcon
+};
+
+
+/*
+ * appNavbarInit
+ *
+ *     Load the app navbar module.
+ *
+ */
+
+function appNavbarInit(local manifest) {
+    manifest = `(appNavbarFrame, AppNavbar, appNavbarInit)
+
+    Naan.module.build(module.id, "app_navbar", function(modobj, compobj) {
+        compobj.manifest = manifest
+    })
+    
+} ();

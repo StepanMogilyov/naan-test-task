@@ -1,0 +1,39 @@
+/*
+ * naan_init.nlg
+ * WebApp Example 1
+ *
+ * Loaded automatically to initialize the main browser thread.
+ *
+ * column positioning:                          //                          //                      !
+ *
+ * Copyright (c) 2021-2022 by Richard C. Zulch
+ *
+ */
+
+loglevel(3);;
+chns("Play");;
+
+if js.w.opener
+    require("code/naan_init_common.nlg");                                   // initialization for all Naan instances
+
+
+/*
+ * loadWebApp
+ *
+ *     Load WebApp into the browser, whether for the first time or after reload.
+ *
+ */
+
+firstload = true
+
+function loadWebApp() {
+    if firstload
+        debuglog("WebApp loaded")
+    else
+        debuglog("WebApp reloaded")
+    firstload = false
+    module.postload = loadWebApp                                             // called again after reload
+    js.w.document.title = "WebApp $Version$"
+    App.webapp = require("code/webapp/webapp.nlg").WebAppAdmin("$Version$")
+    App.webapp.debug()
+} ();;

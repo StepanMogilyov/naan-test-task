@@ -1,0 +1,148 @@
+<!doctype html>
+
+<!--
+ === head ===
+ -->
+      
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>WebApp</title>
+    <meta name="description" content="WebApp for NaanIDE">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="exlib/bootstrap/bootstrap.bundle.min.js">
+    <link rel="stylesheet" href="exlib/bootstrap/bootstrap.min.css">
+    <link rel="stylesheet" href="webapp.css">
+    <link rel="icon" href="exlib/images/webapp.ico" sizes="256x256 128x128 32x32 16x16">
+</head>
+
+<!--
+ === body ===
+ -->
+      
+<body class="h-100">
+
+    <!--
+     === global alert area ===
+     -->
+
+    <div class="alertArea">
+        <div class="row">
+            <div class="col-sm-2"></div>
+            <div class="col-sm-10" id="globalAlertArea">
+                <!-- alerts inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <!--
+     === alerts templates ===
+     -->
+      
+    <div id="closableAlertTemplate" class="alert alert-dismissible fade show d-none" role="alert">
+        <div>{alert-text}</div>
+        <button type="button" class="btn-close close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <!--
+     === top navigation display area ===
+     -->
+
+    <nav id="webappNavbar" class="navbar navbar-dark bg-primary navbar-expand-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand mb-1" href="#">WebApp</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul id="WebAppNav" class="navbar-nav me-auto mb-sm-0">
+                    <li class="nav-item" id="WebAppNavHome">
+                        <a class="nav-link active" href="#">Home</a>
+                    </li>
+                    <li class="nav-item" id="WebAppNavUsers">
+                        <a class="nav-link active" href="#">Users</a>
+                    </li>
+                    <li class="nav-item" id="WebAppNavContent">
+                        <a class="nav-link active" href="#">Content</a>
+                    </li>
+                </ul>
+                <div style="padding-right: 5px; display: flex; justify-content: center">
+                    <div style="width: 50px; height: 50px; border-radius: 25px; background: violet">
+                        <div id="WebAppAvatarInnerText" style="margin-left: 45%; margin-top: 25%"></div>
+                    </div>
+                </div>
+                <div id="WebAppUserInfo" class="text-light mx-3"></div>
+                <button id="WebAppLogout" class="btn btn-outline-light" type="submit">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+
+    <!--
+     === Begin page content ===
+     -->
+
+    <main role="main" class="container h-100 w-100" id="WebAppMain">
+
+        <!-- modal login -->
+        <div class="modal fade" id="webAppLoginModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="staticBackdropLabel">WebApp Login</h5>
+                    </div>
+                        <div class="modal-body">
+                            <div class="d-grid gap-3">
+                                <input class="mli_email form-control form-control" type="text" placeholder="email">
+                                <input class="mli_password form-control form-control" type="password" placeholder="password">
+                                <div class="mli_error text-danger fw-bold"></div>
+                            </div>
+                        </div>
+                    <div class="modal-footer">
+                        <div class="modal-spinner-icon me-auto invisible"></div>
+                        <button type="button" class="mli_login btn btn-primary">Login</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- home tab -->
+        <div class="row filltop" id="WebAppPageHome" style="visibility:hidden;">
+            <div class="container" style="padding-top:20px;">
+                home content goes here
+            </div>
+        </div>
+
+        <!-- users tab -->
+        <div class="row filltop" id="WebAppPageUsers" style="visibility:hidden">
+            <div class="container" style="padding-top:20px;">
+                users content goes here
+            </div>
+        </div>
+        
+        <!-- content tab -->
+        <div class="row filltop" id="WebAppPageContent" style="visibility:hidden">
+            <div class="container" style="padding-top:20px;">
+                content goes here
+            </div>
+        </div>
+
+    </main>
+
+    <!--
+     === scripts & extensions ===
+     -->
+
+    <script src="exlib/bootstrap/bootstrap.min.js"></script>
+
+    <script src="code/naan.min.js"></script>
+    <script src="code/env_hosted.js"></script>
+
+    <!-- No Javascript fallback -->
+    <noscript><div id='WebAppRequired'  style="position:absolute;text-align:center;width:99%;top:50%">WebApp Requires JavaScript</div></noscript>
+
+    <!-- END Javascript conditionals -->
+</body>
+</html>

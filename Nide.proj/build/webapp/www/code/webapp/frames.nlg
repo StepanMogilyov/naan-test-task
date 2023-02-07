@@ -1,0 +1,292 @@
+/*
+ * pages.nlg
+ * WebApp Example 1
+ *
+ * column positioning:                          //                          //                      !
+ *
+ * Copyright (c) 2022 by Richard C. Zulch
+ *
+ */
+
+
+/*
+ * FrameBase
+ *
+ *     A base class for frame instances with the common code. All frame objects with the same page
+ * type share a non-visible prototype div that they clone to create their own non-DOM instance. When
+ * the page is needed in the DOM then the setParent(pardiv) method adds it to the specified parent
+ * DOM. Likewise the clearParent() method removes it from its parent.
+ *
+ */
+
+closure FrameBase(frames, divID, local frame) {
+    frame = new(object, this)
+    frame.divID = divID
+    frame.divPrototype = document.getElementById(divID)
+    frame.div = frame.divPrototype.cloneNode(true)
+    frame.div.removeAttribute("id")                                          // ensure no duplicate IDs
+    
+    // firstClass
+    //
+    // Return the first instances of the specified CSS class within the frame, or false.
+    //
+    frame.firstClass = function firstClass(className local elems) {
+        elems = frame.div.getElementsByClassName(className)
+        if elems.length == 0
+            debuglog("FrameBase.firstClass found no elements of class", className, "in frame", divID)
+        else if elems.length > 1
+            debuglog("FrameBase.firstClass found", elems.length, "elements of class", className, "in frame", divID)
+        elems.0
+    }
+    
+    // clone
+    //
+    // Clone the frame, returning the new object with its own div and no parent.
+    //
+    frame.clone = function clone() {
+        debuglog("FrameBase.clone is abstract")
+    }
+
+    // options
+    //
+    // Return UI options required for this frame:
+    //
+    frame.options = function options() {
+        { }
+    }
+
+    // activate
+    //
+    // Activate this frame in the container.
+    //
+    frame.activate = function activate() {
+        frames.frameSwitch(frame)
+    }
+    
+    // setParent
+    //
+    // This adds us to the specified parent, or to the frames container if false. This moves the page
+    // from its previous parent if it has one.
+    //
+    frame.setParent = function setParent(pardiv) {
+        if pardiv === frame.div.parentElement
+            return
+        if !pardiv
+            pardiv = frames.swiper.baseDiv
+        pardiv.appendChild(frame.div)
+        debuglog("added to parent", frame.divID, pardiv.id)
+    }
+    
+    // clearParent
+    //
+    // Clear our parent div, if we have one, removing us from the DOM.
+    //
+    frame.clearParent = function clearParent() {
+        if frame.div.parentElement
+            frame.div.parentElement.removeChild(frame.div)
+    }
+
+    // dispose
+    //
+    // Dispose of the frame.
+    //
+    frame.dispose = function dispose() {
+        clearParent()
+        frame.div = false
+    }
+
+    // finis
+
+    frame
+};
+
+
+/*
+ * FramesCache
+ *
+ *     Manage a cache of frames to minimize the need to recreate them while not keeping too many
+ * around and exhausting resources.
+ *
+ */
+
+closure FramesCache(webapp, local cachef) {
+    cachef = new(object, this)
+    cachef.frames = []
+    
+    // lookup
+    //
+    // Return a frame of the specified divID and courseID, or false if we don't have it.
+    //
+    cachef.lookup = function lookup(divID, courseID, local trav) {
+        for trav in cachef.frames
+            if trav.divID == divID && trav.courseID == courseID
+                return (trav.frame)
+        false
+    }
+    
+    // store
+    //
+    // Store a frame of the specified divID and courseID.
+    //
+    cachef.store = function store(divID, courseID, frame, local trav) {
+        for trav in cachef.frames
+            if trav.divID == divID && trav.courseID == courseID {
+                trav.frame = frame
+                return
+            }
+        cachef.frames.push({
+            divID: divID
+            courseID: courseID
+            frame: frame
+        })
+    }
+    
+    // touchPlayAll
+    //
+    // Touch all of our frames looking for video players.
+    //
+    cachef.touchPlayAll = function touchPlayAll() {
+        for trav in cachef.frames
+            trav.frame.touchPlay()
+    }
+
+    // finis
+    
+    cachef
+};
+
+
+/*
+ * FramesContainer
+ *
+ *     Here a Page is a page-type that is instantiated as one or more frames that can be identical or
+ * different examples of that page. Each frame corresponds to a div that may be in the DOM or not.
+ *     A FramesContainer instance holds all the various frames that may exist, and all frames inherit
+ * from FrameBase. This Frames architecture is designed to hold multiple instances of the same page
+ * for convenience in supporting swipe-anywhere navigation, and for cacheing elements that are time-
+ * consuming to recreate.
+ *     When a swipe begins, frames are created or cloned and placed in div containers on the approp-
+ * riate sides of the baseDiv container. As move events come in the three active frames scroll along
+ * the selected axis, which requires potentially multiple frames of the same page-type but different
+ * data.
+ *     Each page-type has a separate component and closure to manage all frames of that type, and is
+ * responsible for creating and deleting instances.
+ *
+ */
+
+closure FramesContainer(webapp, local fracon) {
+    fracon = new(object, this)
+    fracon.webapp = webapp
+    fracon.cache = FramesCache(webapp)
+    fracon.run_swipe_pointer = document.getElementById("run_swipe_pointer")
+    fracon.curFrame = false
+    fracon.navList = []
+    fracon.state = { }
+
+    // frameSwitch
+    //
+    // Show the specified page as our visible screen, adding it to the DOM if needed.
+    //
+    fracon.frameSwitch = function frameSwitch(frame, local options) {
+        if fracon.curFrame === frame
+            return
+        if fracon.curFrame {
+            fracon.navList.push(fracon.curFrame)
+            setElementClass(fracon.curFrame.div, "d-none", true)
+        }
+        frame.setParent(fracon.swiper.baseDiv)                              // add to DOM
+        setElementClass(frame.div, "d-none", false)
+        fracon.curFrame.deactivated()
+        fracon.curFrame = frame
+        frame.activated()
+    }
+        
+    // frameSwapped
+    //
+    // Adjust for already-swapped frames after a swipe.
+    //
+    function frameSwapped(frame) {
+        if fracon.curFrame
+            fracon.navList.push(fracon.curFrame)
+        fracon.curFrame.deactivated()
+        fracon.curFrame = frame
+        frame.activated()
+    }
+
+    // goBack
+    //
+    // Go back to previous frame.
+    //
+    fracon.goBack = function goBack(local backloc) {
+        backloc = fracon.navList.pop()
+        if backloc {
+            frameSwitch(backloc)
+            fracon.navList.pop()                                            // don't save previous current
+        }
+    }
+
+    // Swiper
+    //
+    // Configure our container for swiping to switch frames.
+    //
+    fracon.swiper = Swiper(fracon.run_swipe_pointer, {
+        baseSwipingClass: "crp_swipe"
+    }, function(operation, axis, direction, local preFrame, postFrame, div) {
+        if operation == "start" {
+            `(preFrame, postFrame) = fracon.curFrame.swipeStart(axis)
+            fracon.preFrame = preFrame
+            fracon.postFrame = postFrame
+            debuglog("swiping:", preFrame.divID, postFrame.divID)
+            return (list(preFrame.div, postFrame.div))
+        }
+        else if operation == "early" {
+            if direction == 0 {
+                if fracon.preFrame
+                    fracon.preFrame.early()
+            } else if direction == 1 {
+                if fracon.postFrame
+                    fracon.postFrame.early()
+            }
+        }
+        else if operation == "end" {
+            fracon.curFrame.swipeEnd(axis, direction)
+            if direction == 0 {
+                if fracon.preFrame
+                    frameSwapped(fracon.preFrame)
+                fracon.postFrame.clearParent()
+            } else if direction == 1 {
+                if fracon.postFrame
+                    frameSwapped(fracon.postFrame)
+                fracon.preFrame.clearParent()
+            }
+            fracon.preFrame = fracon.postFrame = false
+        }
+        else if operation == "click"
+            fracon.cache.touchPlayAll(axis)
+        else if !operation {
+            fracon.preFrame.clearParent()
+            fracon.postFrame.clearParent()
+            fracon.preFrame = fracon.postFrame = false
+        }
+    })
+    
+    // finis
+    
+    fracon
+};
+
+
+/*
+ * framesInit
+ *
+ *     Load the Frames module.
+ *
+ */
+
+function framesInit(local manifest) {
+    manifest = `(FrameBase, FramesCache, FramesContainer, framesInit)
+
+    Naan.module.build(module.id, "frames", function(modobj, compobj) {
+        compobj.manifest = manifest
+    })
+} ();

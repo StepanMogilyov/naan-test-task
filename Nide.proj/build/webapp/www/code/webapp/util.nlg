@@ -1,0 +1,91 @@
+/*
+ * util.nlg
+ * WebbApp Example 1
+ *
+ * column positioning:                          //                          //                      !
+ *
+ * Copyright (c) 2023 by Richard C. Zulch
+ *
+ */
+
+
+/*
+ * persistent
+ *
+ *     This global stores the client state including authentication tokens. If it is not available
+ * the software will fall back to a saved state in local storage. This occurs when the webapp is
+ * upgraded because the global values will be discarded.
+ *
+ */
+
+/*
+ * loadIdentity
+ * storeIdentity
+ *
+ *     Persistently our device identity for the backend.
+ *
+ */
+
+function loadIdentity() {
+    try {
+        JSONparse(js.w.localStorage.getItem("webapp_id"))
+    } catch {
+        if true { false }
+    }
+};
+
+function storeIdentity(value) {
+    try {
+        js.w.localStorage.removeItem("webapp_id")
+        js.w.localStorage.setItem("webapp_id", JSONstringify(value))
+    } catch {
+        if true { false }
+    }
+};
+
+
+/*
+ * setElementClass
+ *
+ *     Add or remove a class from a DOM element.
+ *
+ */
+    
+function setElementClass(elem, className, present) {
+    if present {
+        if !elem.classList.contains(className)
+            elem.classList.add(className)
+    } else
+        elem.classList.remove(className)
+};
+
+
+/*
+ * escapeHTML
+ *
+ *     Escape some HTML into plain text.
+ *
+ */
+
+function escapeHTML(html) {
+    document.createElement("div")
+        .appendChild(document.createTextNode(html))
+        .parentNode
+        .innerHTML
+};
+
+
+/*
+ * utilInit
+ *
+ *     Initialize the util component.
+ *
+ */
+
+function utilInit(local manifest) {
+    manifest = `(loadIdentity, storeIdentity, setElementClass, escapeHTML, utilInit)
+
+    Naan.module.build(module.id, "util", function(modobj, compobj, local nideCommon) {
+        compobj.manifest = manifest
+    })
+} ();
