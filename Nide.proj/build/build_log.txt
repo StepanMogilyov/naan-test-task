@@ -1,8 +1,8 @@
 Build example-1-webapp - debug
-date: Wed Feb 08 2023 13:03:05 GMT+0400 (Грузия, стандартное время)
+date: Wed Feb 08 2023 13:16:49 GMT+0400 (Грузия, стандартное время)
 from: C:\Users\Stef\Desktop\onramp\examples\example-1-webapp\
   to: Nide.proj\build
 type: dev
-vers: 0.1.1-100
+vers: 0.1.1-101
 -------------------------------------------------------------------------------
 Build had no errors
