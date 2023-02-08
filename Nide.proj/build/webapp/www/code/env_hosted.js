@@ -520,7 +520,7 @@ exports.NaanControllerWeb = function() {
         statedoc.curversion = kStateCurrentVersion;
         statedoc.firstver = kStateFirstVersion;
         statedoc.licensee = "$Licensee$";
-        statedoc.verstring = "0.1.1-79";
+        statedoc.verstring = "0.1.1-100";
         statedoc.date = new Date().toISOString();
         statedoc.prefs = prefs;
         statedoc.naan = naanlib.saveState(true);                            // true to optimize, which is a bit slower
@@ -538,7 +538,7 @@ exports.NaanControllerWeb = function() {
             || statedoc.firstver > kStateCurrentVersion
             || statedoc.curversion < kStateFirstVersion
             || statedoc.licensee != "$Licensee$"
-            || statedoc.verstring != "0.1.1-79")
+            || statedoc.verstring != "0.1.1-100")
         {
             localStorage.removeItem("NaanState_Hosted");
             return (false);
@@ -597,7 +597,7 @@ exports.NaanControllerWeb = function() {
                     op: "VsiteOpen",
                     name: vsiteName,
                     naancont: contSelf,
-                    title: vsiteName + " 0.1.1-79"
+                    title: vsiteName + " 0.1.1-100"
                 });
             }
         } catch (e) {
@@ -611,7 +611,7 @@ exports.NaanControllerWeb = function() {
                     op: "VsiteClose",
                     name: vsiteName,
                     naancont: contSelf,
-                    title: vsiteName + " 0.1.1-79"
+                    title: vsiteName + " 0.1.1-100"
                 });
                 termTextOut("\x1b[90m\x1b[3m".concat("\nwindow closed", "\x1b[0m\n"));
             }
@@ -626,7 +626,7 @@ exports.NaanControllerWeb = function() {
         naanlib.banner();
         var hostpath = naanlib.js.r("path").dirname(window.location.href);
         naanlib.start({
-            cmd: 'App.version = "0.1.1-79";;\r\n'
+            cmd: 'App.version = "0.1.1-100";;\r\n'
                 + 'App.cache = "abd6ccce991236803cd6e6ef71403d5b";;\r\n'
                 + 'Naan.module.requireQuery({ naanver: App.cache });;\r\n'
                 + 'Naan.module.webparse("code/naan_init.nlg", "' + hostpath + '", { naanver: App.cache });;\r\n'

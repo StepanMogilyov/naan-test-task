@@ -29,7 +29,7 @@ closure appNavbarFrame(navcon, local navbar, webapp) {
     navbar.main = document.getElementById("WebAppMain")
     navbar.userInfo = document.getElementById("WebAppUserInfo")
     navbar.butLogout = document.getElementById("WebAppLogout")
-    navbar.avatar = document.getElementById("WebAppAvatarInnerText")
+    navbar.avatarContainer = document.getElementById("WebAppAvatarContainer")
     webapp = navcon.frames.webapp
 
     // event handlers
@@ -115,14 +115,19 @@ closure appNavbarFrame(navcon, local navbar, webapp) {
     // setCurrentUser(data) - display or clear the current user info
     navbar.setCurrentUser = function setCurrentUser(info) {
         if info.fullName {
-      //      TESTTESTTEST
-           navbar.userInfo.innerText = info.fullName
-           // here i tryed to get "info.fullname[0]", but i wasn't succeed
-           navbar.avatar.innerText = "J"
+    navbar.userInfo.innerText = info.fullName
+    navbar.avatarContainer.innerHTML = '
+    <div id="WebAppAvatar" style="padding-right: 5px; display: flex; justify-content: center">
+        <div style="width: 50px; height: 50px; border-radius: 25px; background: violet">
+            <div style="margin-left: 45%; margin-top: 25%">J</div>
+        </div>
+    </div>
+    '           // Here instead "J" I tryed to use something like `${info.fullName[0]}`, but I wasn't succeed
       }
-
-       else
+       else {
+            document.getElementById("WebAppAvatar").remove()
             navbar.userInfo.innerText = ""
+       }
     }
     
     // navbar.objForIdent(ident)    - return object for that page

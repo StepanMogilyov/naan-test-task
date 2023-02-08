@@ -33,7 +33,7 @@ function loadWebApp() {
         debuglog("WebApp reloaded")
     firstload = false
     module.postload = loadWebApp                                             // called again after reload
-    js.w.document.title = "WebApp 0.1.1-79"
-    App.webapp = require("code/webapp/webapp.nlg").WebAppAdmin("0.1.1-79")
+    js.w.document.title = "WebApp 0.1.1-100"
+    App.webapp = require("code/webapp/webapp.nlg").WebAppAdmin("0.1.1-100")
     App.webapp.debug()
 } ();;
